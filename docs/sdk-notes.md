@@ -608,3 +608,24 @@ Gear Selection, Brake Pedal, ETCS, Telltales(주차 브레이크·방향지시�
 - 성능(`prodRelease`): 주행 중 CPU 평균 0.03%·2초 최대 0.48%(코어 하나), 정차 중 최악 조작 5.67%·9.95%, PSS 최대 57MB, 콜드 실행 178ms 이하. 방법과 표는 `docs/performance.md`.
 - 다른 앱 5개를 띄워도 같은 PID·FGS 유지, Activity STOPPED 상태에서 VC 변경 7건 기록.
 
+
+---
+
+## 14. M6 에뮬레이터 실측 (2026-11-03)
+
+| 확인 항목 | 결과 |
+|---|---|
+| 패키지 변경 | `com.example.hyundaihackathon` → `com.garam.hackathon`. 다른 앱이 되므로 예전 앱을 지우고 새로 설치. Room 스키마 폴더도 DB 클래스 FQCN에 맞춰 이동 |
+| 작업 표시줄 아이콘 | GNB의 최근 앱 칸은 패키지를 처음 설치할 때의 아이콘을 저장해 두고 업데이트해도 바꾸지 않는다. M5 전(아이콘 없음)에 설치된 예전 패키지가 로봇 아이콘으로 보였던 이유. 비트맵 아이콘만 넣은 빌드와 적응형 아이콘 빌드 모두 같은 결과라 PNG 대체 아이콘은 넣지 않았다. 앱 목록은 새 아이콘을 바로 보여준다 |
+| 주·야간 | `cmd uimode night yes/no`로 전환하면 앱 테마가 시스템을 따라 바뀜(Driving view와 같은 쪽). 창 배경(`Theme.CarMeter`, values-night)도 맞춰 시작 시 깜박임 없음 |
+| 일간·주간·월간 | 탭 전환·이전/다음 이동 정상. 주는 월요일 시작(11월 2일 ~ 8일), 일간은 시간대 막대 24개, 월간은 날짜 막대. 오늘·현재 시간 막대는 주황 |
+| 좁은 창 (`am task resize`, 840dp) | 탭이 둘째 줄로 내려가고 한 열 배치, 표는 행마다 막대 |
+| 주행 중 (VC 기어 D, 40km/h) | 일간 탭을 보던 중에도 이번 달 값 3개만 보임. P로 돌리면 보던 탭으로 복귀 |
+| 동의 철회 | 확인 대화상자 → FGS 0개, `feature_interval`·`counter_event`·`trip`·`vehicle_snapshot` 0행, 동의·설정 키 삭제, 동의 화면으로 이동. `daily_summary`에는 철회 직후 화면 새로고침이 만든 "그날 사용 없음" 표시 행(`_NONE`)만 남음(사용 내용 없음). capability 43행은 유지 |
+| 다시 동의 | FGS 다시 시작, "백그라운드 기록 중" |
+| 알림 권한 거부 | 권한을 회수하고 다시 동의 → 시스템 대화상자에서 "허용 안함" → 수집은 시작(FGS 1개, `granted=false`). 앱 안의 상태 표시로 기록 중임을 알 수 있음 |
+| 프로세스 종료 후 복원 | 기록을 끄고(FGS 없음) "지난주·주간"을 고른 뒤 다른 앱을 띄우고 `am kill` → PID가 바뀐 뒤 다시 열자 같은 주·같은 탭으로 복원(`SavedStateHandle`, M3에서 확인 못 했던 항목) |
+| 보관 기간 정리 | 프로세스 시작 때 실행되어 `retentionPurgedOn` 기록. 실제 삭제 쿼리는 JVM에서 검증할 수 없어 기준일 계산과 하루 한 번 실행만 단위 테스트로 고정 |
+| 릴리스 내용 | `prodRelease` R8 매핑에 `SyntheticDataGenerator`·`demo.Demo`·`CollectorDebugScreen`·`BootReceiver` 클래스 없음. 매핑 파일 끝의 `ComposeStackTrace -> $$compose:` 구역에는 디버그 화면의 Compose 그룹 키가 남는데, 스택 트레이스용 표일 뿐 코드가 아니다(클래스 항목 0개) |
+| 성능 (`prodRelease`) | 주행 중 CPU 평균 0.03%·2초 최대 0.48%, 정차 중 2초마다 기간 이동 5.73%·8.03%(코어 하나), PSS 최대 54MB, 콜드 실행 167ms 이하. 표는 `docs/performance.md` |
+| 확인하지 못한 것 | 디스플레이 프리셋(Connect-S 12.9·14.6·17인치)별 화면: 에뮬레이터를 다른 프리셋으로 다시 띄워야 해서 이번에는 2560×1440 한 가지와 좁은 창만 봤다 |

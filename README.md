@@ -1,6 +1,6 @@
 # Hyundai Hackathon · Pleos 개발 환경
 
-Pleos Connect용 3rd-party 앱 CarMeter(내 차 사용 고지서)의 Kotlin 프로젝트입니다. MVP 마일스톤 M0~M5를 마쳤습니다. 백그라운드 수집(공조·시트·열선·조명·와이퍼·크루즈·창문·문·방향지시등·주행 상태), 트립과 기록률 계산, 월간 고지서 화면(주행 중 간략 모드 포함), 첫 실행 동의와 설정(전체·항목별 기록 on/off, 모든 기록 삭제)이 있습니다. 동의 전에는 수집하지 않습니다. `demo` 플레이버에는 공모전 시연용 합성 데이터 생성기가 있고, 제출용 `prod`에는 없습니다. debug 빌드는 고지서 하단의 "수집 확인"으로 원시 기록을 볼 수 있습니다. 부팅 자동 시작은 debug 빌드에만 있고 기본값은 꺼짐이며, 확인 화면의 토글로 켭니다.
+Pleos Connect용 3rd-party 앱 CarMeter(내 차 사용 고지서, 패키지 `com.garam.hackathon`)의 Kotlin 프로젝트입니다. MVP 마일스톤 M0~M5와 제출 전 보완(M6)을 마쳤습니다. 백그라운드 수집(공조·시트·열선·조명·와이퍼·크루즈·창문·문·방향지시등·주행 상태), 트립과 기록률 계산, 일간·주간·월간 사용 리포트(주행 중 간략 모드 포함, 시스템 주·야간에 맞춘 라이트·다크 테마), 첫 실행 동의와 설정(전체·항목별 기록 on/off, 모든 기록 삭제, 동의 철회)이 있습니다. 동의 전에는 수집하지 않고, 기록은 최근 13개월치만 보관합니다. `demo` 플레이버에는 공모전 시연용 합성 데이터 생성기가 있고, 제출용 `prod`에는 없습니다. debug 빌드는 하단의 "수집 확인"으로 원시 기록을 볼 수 있습니다. 부팅 자동 시작은 debug 빌드에만 있고 기본값은 꺼짐이며, 확인 화면의 토글로 켭니다.
 
 | 문서 | 내용 |
 | --- | --- |
@@ -55,6 +55,8 @@ APK: `app/build/outputs/apk/<prod|demo>/<debug|release>/`
 
 시연용 데모 빌드는 `./gradlew :app:assembleDemoDebug`로 만들고, 순서는 `docs/demo-script.md`를 따릅니다.
 
+스토어 등록용 512px 아이콘(`docs/store/icon-512.png`)은 `java -Djava.awt.headless=true scripts/IconRenderer.java`로 다시 만듭니다. 앱 안의 아이콘은 `res/drawable/ic_launcher_foreground.xml`(벡터)이고, 둘은 같은 도형을 씁니다.
+
 성능 측정은 `prodRelease`를 설치하고 동의한 뒤 `adb forward tcp:8088 tcp:8088`을 해 두고 실행합니다. 약 8분 걸리고, 결과 표를 출력합니다.
 
 ```sh
@@ -73,7 +75,7 @@ APK: `app/build/outputs/apk/<prod|demo>/<debug|release>/`
 source scripts/env.sh
 ./gradlew :app:assembleProdDebug
 adb install --user current -r app/build/outputs/apk/prod/debug/app-prod-debug.apk
-adb shell am start --user current -n com.example.hyundaihackathon/.ui.MainActivity
+adb shell am start --user current -n com.garam.hackathon/.ui.MainActivity
 ```
 
 `installDebug`는 헤드리스 시스템 유저(0)에도 앱을 설치하므로, 드라이버 유저에만 설치하는 `adb install --user current`를 씁니다.

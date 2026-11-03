@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon layer: the bill silhouette with the title and usage bars cut out. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M40,28H68A5,5 0,0 1,73 33V76L69.2,80 65.4,76 61.6,80 57.8,76 54,80 50.2,76 46.4,80 42.6,76 38.8,80 35,76V33A5,5 0,0 1,40 28Z M41,34.25H53A1.75,1.75 0,0 1,53 37.75H41A1.75,1.75 0,0 1,41 34.25Z M41,43.5H67A2.5,2.5 0,0 1,67 48.5H41A2.5,2.5 0,0 1,41 43.5Z M41,52.5H60A2.5,2.5 0,0 1,60 57.5H41A2.5,2.5 0,0 1,41 52.5Z M41,61.5H52A2.5,2.5 0,0 1,52 66.5H41A2.5,2.5 0,0 1,41 61.5Z" />
+</vector>

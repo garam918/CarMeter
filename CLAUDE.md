@@ -184,10 +184,10 @@ app_state(key, value)   -- lastAlive 등
 - [x] 앱을 화면에서 내린 상태에서도 Virtual Console로 바꾼 상태가 기록된다. — Activity STOPPED 상태에서 시트·에어컨·창문·문·방향지시등 등 기록 (`docs/sdk-notes.md` 9·10절)
 - [x] 다른 앱을 여러 개 띄워도 수집이 유지되거나, 종료됐다가 재시작하면 `lastAlive` 기준으로 복구된다. — 다른 앱 5개를 띄워도 같은 PID·FGS 유지, 그동안 VC 변경 7건 기록. `kill -9` 후 `START_STICKY` 재시작, 열린 구간을 `lastAlive`로 닫음 (`docs/performance.md`, `docs/sdk-notes.md` 9절)
 - [x] capability에서 지원하지 않는 기능은 리포트에 나오지 않는다. — 에뮬레이터 미지원인 MAX 에어컨·드라이브 모드는 고지서·안 쓴 기능·팁·합성 데이터 어디에도 없음. `MonthlyReportBuilder` 단위 테스트로 고정 (`docs/sdk-notes.md` 10·13.2절)
-- [x] 주행 중에는 간략 화면만 보인다. — 기어 D에서 고지서·설정 어느 화면이든 숫자 3개만, 스크롤·버튼 없음 (`docs/sdk-notes.md` 11·12절)
-- [x] CPU·RAM 기준을 넘지 않는다 (측정 결과 첨부). — `prodRelease` 주행 중 CPU 평균 0.03%(최대 0.48%), 정차 중 최악 5.67%(최대 9.95%), PSS 최대 57MB, 콜드 실행 178ms 이하 (`docs/performance.md`). 에뮬레이터 수치
+- [x] 주행 중에는 간략 화면만 보인다. — 기어 D에서 고지서·설정·일간·주간 어느 화면이든 이번 달 값 3개만, 스크롤·버튼 없음 (`docs/sdk-notes.md` 11·12·14절)
+- [x] CPU·RAM 기준을 넘지 않는다 (측정 결과 첨부). — `prodRelease` 주행 중 CPU 평균 0.03%(최대 0.48%), 정차 중 최악 5.73%(최대 9.95%), PSS 최대 57MB, 콜드 실행 178ms 이하. M5와 M6(새 화면) 두 번 측정 (`docs/performance.md`). 에뮬레이터 수치
 - [x] 릴리스 빌드에 데모 데이터가 없다. — `prodRelease` R8 매핑에 합성 데이터 생성기·`Demo`·디버그 화면·부팅 리시버 없음, `debuggable=false` (`docs/sdk-notes.md` 13.3절)
-- [x] 단위 테스트를 모두 통과한다. — `testProdDebugUnitTest` 95개, `testDemoDebugUnitTest` 103개 모두 통과
+- [x] 단위 테스트를 모두 통과한다. — `testProdDebugUnitTest` 110개, `testDemoDebugUnitTest` 118개 모두 통과 (M6 기준)
 
 ---
 
@@ -202,6 +202,7 @@ app_state(key, value)   -- lastAlive 등
 | M3 리포트 UI | 완료 | 2026-11-03. 일별 집계(daily_summary 캐시)·월간 고지서·팁, 넓은 창 표+막대 / 좁은 창 카드, 주행 중 숫자 3개(`distractionOptimized`), 상태 복원. JVM 테스트 82개 통과. 실측은 `docs/sdk-notes.md` 11절, 규칙은 `docs/implementation-plan.md` 4절 |
 | M4 동의·설정 | 완료 | 2026-11-03. 첫 실행 동의(3가지 안내), 동의 전 수집 차단, 전체·카테고리별 on/off(실시간 반영), 모든 기록 삭제, 상태 표시와 FGS 알림. JVM 테스트 92개 통과. 실측은 `docs/sdk-notes.md` 12절 |
 | M5 마무리 | 완료 | 2026-11-03. `demo` 플레이버와 합성 데이터 생성기(시드 고정, 두 달, 계절 반영), 시연 대본, 릴리스 R8 검증(SDK Gson keep 규칙 추가, capability 스냅샷 오저장 버그 수정), 성능 측정 스크립트와 결과, 완료 기준 7개 증빙. JVM 테스트 prod 95개·demo 103개 통과. 실측은 `docs/sdk-notes.md` 13절, `docs/performance.md`, 시연은 `docs/demo-script.md` |
+| M6 제출 전 보완 | 완료 | 2026-11-03. 패키지 `com.garam.hackathon`, 새 아이콘(고지서+사용량 막대)과 스토어용 512px, 라이트·다크 테마(시스템 주·야간)와 24sp 이상 글자, 일간·주간·월간 보기(기간 합계·분포 막대·지난 기간 비교), 동의 철회(기록 삭제), 13개월 보관 정리, 빈 기간 안내, 기록률 없음 사유. JVM 테스트 prod 110개·demo 118개 통과. 실측은 `docs/sdk-notes.md` 14절, 규칙은 `docs/implementation-plan.md` 7절 |
 
 **확인 필요 (외부 문의)**
 - 부팅 시 자동 시작(BOOT_COMPLETED) 허용 여부 (헤드리스 구조라 u0·u10 모두 수신함)
@@ -212,6 +213,7 @@ app_state(key, value)   -- lastAlive 등
 - Vehicle SDK 2.3.2 consumer ProGuard 규칙에 Gson `TypeToken` keep 누락 (R8 릴리스에서 SDK가 동작하지 않음, 앱 쪽에서 우회)
 - CPU 기준(주행 5%·정차 25%)이 코어 하나 기준인지 전체 기준인지
 - 배포용 서명 인증서 발급 절차
+- 업데이트 안내: 마켓에 자동 업데이트가 없어 앱이 새 버전을 알려야 하는데(앱 업데이트 가이드), 네트워크 없이 새 버전을 알 방법이나 버전 확인 SDK 일정
 
 ---
 

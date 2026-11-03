@@ -19,7 +19,7 @@ cd "$(dirname "$0")/.."
 . scripts/env.sh
 exec </dev/null
 
-PKG=com.example.hyundaihackathon
+PKG=com.garam.hackathon
 ACTIVITY=$PKG/.ui.MainActivity
 VC=http://127.0.0.1:8088
 TICKS_PER_SEC=100
@@ -36,7 +36,8 @@ CLIENT=$(python3 -c 'import uuid; print(uuid.uuid4())')
 keep_session() { while true; do curl -s -o /dev/null -X POST "$VC/browser/session?client=$CLIENT"; sleep 1; done; }
 keep_session &
 SESSION_PID=$!
-trap 'kill $SESSION_PID 2>/dev/null; wait $SESSION_PID 2>/dev/null; curl -s -o /dev/null -X POST "$VC/browser/session?client=$CLIENT&closing=1"' EXIT
+# wait reports the killed loop as 143; under set -e that would end the trap before the session is closed.
+trap 'kill $SESSION_PID 2>/dev/null; wait $SESSION_PID 2>/dev/null || true; curl -s -o /dev/null -X POST "$VC/browser/session?client=$CLIENT&closing=1" || true' EXIT
 sleep 2
 delivered() { adb logcat -d | grep -c "broadcastPropertyCallback() called with: applicationId = $PKG" || true; }
 app_pid() { adb shell pidof $PKG | tr -d '\r'; }

@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.hyundaihackathon"
+    namespace = "com.garam.hackathon"
     // Newer AndroidX libraries need compileSdk 35+. targetSdk stays at the emulator's API 34.
     compileSdk = 36
     buildToolsVersion = "35.0.0"
@@ -16,7 +16,7 @@ android {
     useLibrary("android.car")
 
     defaultConfig {
-        applicationId = "com.example.hyundaihackathon"
+        applicationId = "com.garam.hackathon"
         minSdk = 28
         targetSdk = 34
         versionCode = 4
