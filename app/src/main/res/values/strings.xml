@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CarMeter</string>
+
+    <string name="collector_channel_name">기록 상태</string>
+    <string name="collector_notification_title">차량 기능 사용을 기록하고 있어요</string>
+    <string name="collector_notification_text">기록은 이 차 안에만 저장됩니다.</string>
+</resources>

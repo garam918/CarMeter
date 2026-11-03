@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A bill with a gauge needle: CarMeter's monthly usage statement. 108dp canvas, 72dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Paper -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M36,28h36a4,4 0,0 1,4 4v44l-6,-4 -6,4 -6,-4 -6,4 -6,-4 -6,4 -6,-4V32a4,4 0,0 1,4 -4z" />
+    <!-- Gauge arc -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF1B6FB5"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M42,54a12,12 0,0 1,24 0" />
+    <!-- Needle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFF8A3D"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M54,54L61,45" />
+    <!-- Lines of the bill -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF8FA3B5"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M42,62h24M42,68h16" />
+</vector>

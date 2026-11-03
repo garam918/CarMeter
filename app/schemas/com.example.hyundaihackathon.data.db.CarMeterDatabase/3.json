@@ -1,0 +1,412 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "0aa4fea8321219572977647fbe0abf9b",
+    "entities": [
+      {
+        "tableName": "feature_interval",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `featureKey` TEXT NOT NULL, `zone` INTEGER NOT NULL, `level` INTEGER NOT NULL, `startTs` INTEGER NOT NULL, `endTs` INTEGER, `tripId` INTEGER, `closedBy` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "featureKey",
+            "columnName": "featureKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zone",
+            "columnName": "zone",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startTs",
+            "columnName": "startTs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endTs",
+            "columnName": "endTs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "closedBy",
+            "columnName": "closedBy",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_feature_interval_startTs",
+            "unique": false,
+            "columnNames": [
+              "startTs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_feature_interval_startTs` ON `${TABLE_NAME}` (`startTs`)"
+          },
+          {
+            "name": "index_feature_interval_endTs",
+            "unique": false,
+            "columnNames": [
+              "endTs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_feature_interval_endTs` ON `${TABLE_NAME}` (`endTs`)"
+          }
+        ]
+      },
+      {
+        "tableName": "app_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "key"
+          ]
+        }
+      },
+      {
+        "tableName": "counter_event",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `featureKey` TEXT NOT NULL, `zone` INTEGER NOT NULL, `ts` INTEGER NOT NULL, `tripId` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "featureKey",
+            "columnName": "featureKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zone",
+            "columnName": "zone",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ts",
+            "columnName": "ts",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_counter_event_ts",
+            "unique": false,
+            "columnNames": [
+              "ts"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_counter_event_ts` ON `${TABLE_NAME}` (`ts`)"
+          }
+        ]
+      },
+      {
+        "tableName": "trip",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`tripId` INTEGER NOT NULL, `startTs` INTEGER NOT NULL, `endTs` INTEGER, `odoKmStart` REAL, `odoKmEnd` REAL, `drivingMinStart` INTEGER, `drivingMinEnd` INTEGER, `fuelEconomyEnd` REAL, `evEfficiencyEnd` REAL, `socStart` INTEGER, `socEnd` INTEGER, PRIMARY KEY(`tripId`))",
+        "fields": [
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startTs",
+            "columnName": "startTs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endTs",
+            "columnName": "endTs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "odoKmStart",
+            "columnName": "odoKmStart",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "odoKmEnd",
+            "columnName": "odoKmEnd",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "drivingMinStart",
+            "columnName": "drivingMinStart",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "drivingMinEnd",
+            "columnName": "drivingMinEnd",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "fuelEconomyEnd",
+            "columnName": "fuelEconomyEnd",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "evEfficiencyEnd",
+            "columnName": "evEfficiencyEnd",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "socStart",
+            "columnName": "socStart",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "socEnd",
+            "columnName": "socEnd",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "tripId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_trip_startTs",
+            "unique": false,
+            "columnNames": [
+              "startTs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_trip_startTs` ON `${TABLE_NAME}` (`startTs`)"
+          }
+        ]
+      },
+      {
+        "tableName": "vehicle_snapshot",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `ts` INTEGER NOT NULL, `reason` TEXT NOT NULL, `odometerKm` REAL, `drivingTimeMin` INTEGER, `fuelEconomy` REAL, `evEfficiency` REAL, `socPercent` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ts",
+            "columnName": "ts",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "odometerKm",
+            "columnName": "odometerKm",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "drivingTimeMin",
+            "columnName": "drivingTimeMin",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "fuelEconomy",
+            "columnName": "fuelEconomy",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "evEfficiency",
+            "columnName": "evEfficiency",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "socPercent",
+            "columnName": "socPercent",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_vehicle_snapshot_ts",
+            "unique": false,
+            "columnNames": [
+              "ts"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_vehicle_snapshot_ts` ON `${TABLE_NAME}` (`ts`)"
+          }
+        ]
+      },
+      {
+        "tableName": "capability_snapshot",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`featureKey` TEXT NOT NULL, `zone` INTEGER NOT NULL, `supported` INTEGER NOT NULL, `minLevel` INTEGER, `maxLevel` INTEGER, `error` TEXT, `checkedAt` INTEGER NOT NULL, `appVersionCode` INTEGER NOT NULL, PRIMARY KEY(`featureKey`, `zone`))",
+        "fields": [
+          {
+            "fieldPath": "featureKey",
+            "columnName": "featureKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zone",
+            "columnName": "zone",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "supported",
+            "columnName": "supported",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minLevel",
+            "columnName": "minLevel",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "maxLevel",
+            "columnName": "maxLevel",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "error",
+            "columnName": "error",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "checkedAt",
+            "columnName": "checkedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appVersionCode",
+            "columnName": "appVersionCode",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "featureKey",
+            "zone"
+          ]
+        }
+      },
+      {
+        "tableName": "daily_summary",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `itemKey` TEXT NOT NULL, `onSec` INTEGER NOT NULL, `count` INTEGER NOT NULL, `avgLevel` REAL, PRIMARY KEY(`date`, `itemKey`))",
+        "fields": [
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemKey",
+            "columnName": "itemKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "onSec",
+            "columnName": "onSec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avgLevel",
+            "columnName": "avgLevel",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date",
+            "itemKey"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0aa4fea8321219572977647fbe0abf9b')"
+    ]
+  }
+}
