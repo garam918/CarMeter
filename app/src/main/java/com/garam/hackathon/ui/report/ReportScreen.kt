@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,8 +29,8 @@ import com.garam.hackathon.ui.components.PrimaryButton
 import com.garam.hackathon.ui.components.SecondaryButton
 import com.garam.hackathon.ui.components.SegmentedTabs
 
-/** Windows at least this wide get two columns: summary and chart, then the table. */
-private val WideWidth = 1000.dp
+/** Leaves over 100 dp for comparison bars after page padding, column gap and fixed table cells. */
+private val WideWidth = 1400.dp
 
 private val PeriodTabs = listOf(PeriodKind.DAY to "일간", PeriodKind.WEEK to "주간", PeriodKind.MONTH to "월간")
 
@@ -46,7 +47,7 @@ fun ReportScreen(
     onRetry: () -> Unit,
     extras: ReportExtras,
 ) {
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (isDriving) {
             DrivingSummary(state.monthReport)
             return@Surface
@@ -94,18 +95,27 @@ data class HeaderActions(
 private fun ReportHeader(state: ReportUiState, actions: HeaderActions, wide: Boolean) {
     val tabs = @Composable { SegmentedTabs(PeriodTabs, state.period.kind, actions.onSelectKind) }
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            NavIconButton(R.drawable.ic_chevron_left, "이전", actions.onPrevious)
-            Text(
-                ReportFormat.periodTitle(state.period),
-                style = MaterialTheme.typography.headlineMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            NavIconButton(R.drawable.ic_chevron_right, "다음", actions.onNext, enabled = state.canShowNext)
-            if (state.loading) CircularProgressIndicator(modifier = Modifier.size(32.dp), strokeWidth = 3.dp)
-            Spacer(Modifier.weight(1f))
+        Text("CarMeter  /  내 차 사용 고지서", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                NavIconButton(R.drawable.ic_chevron_left, "이전 기간", actions.onPrevious)
+                Text(
+                    ReportFormat.periodTitle(state.period),
+                    style = MaterialTheme.typography.headlineMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                NavIconButton(R.drawable.ic_chevron_right, "다음 기간", actions.onNext, enabled = state.canShowNext)
+            }
             if (wide) tabs()
             SecondaryButton("설정", actions.onOpenSettings)
         }

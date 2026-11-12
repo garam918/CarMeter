@@ -2,6 +2,7 @@ package com.garam.hackathon.ui.report
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,16 +23,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.garam.hackathon.R
 import com.garam.hackathon.aggregate.ItemUsage
 import com.garam.hackathon.aggregate.PeriodKind
+import com.garam.hackathon.aggregate.RecordingRate
 import com.garam.hackathon.aggregate.ReportFormat
 import com.garam.hackathon.aggregate.ReportItem
 import com.garam.hackathon.aggregate.UsageBucket
@@ -39,6 +53,7 @@ import com.garam.hackathon.aggregate.UsageReport
 import com.garam.hackathon.ui.components.Badge
 import com.garam.hackathon.ui.components.BadgeTone
 import com.garam.hackathon.ui.components.MeterBar
+import com.garam.hackathon.ui.components.NavIconButton
 import com.garam.hackathon.ui.components.SecondaryButton
 import com.garam.hackathon.ui.components.Section
 import com.garam.hackathon.ui.components.TouchTarget
@@ -51,11 +66,37 @@ private const val GOOD_RECORDING_RATE = 0.8
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun SummaryHero(report: UsageReport, header: HeaderActions) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(heroCaption(report), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(ReportFormat.duration(report.totalSec), style = MaterialTheme.typography.displayMedium)
-        val change = ReportFormat.totalChange(report)
-        if (change.isNotEmpty()) Text(change, style = MaterialTheme.typography.titleMedium, color = changeColor(report.totalChangePercent))
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.extraLarge)
+                .background(Brush.horizontalGradient(listOf(ReportInk, Color(0xFF175044))))
+                .drawBehind {
+                    repeat(4) { index ->
+                        val inset = index * 18.dp.toPx()
+                        val route = Path().apply {
+                            moveTo(size.width * 0.62f + inset, size.height)
+                            cubicTo(
+                                size.width * 0.94f + inset, size.height * 0.78f,
+                                size.width * 0.67f + inset, size.height * 0.44f,
+                                size.width + inset, size.height * 0.16f,
+                            )
+                        }
+                        drawPath(route, ReportMint.copy(alpha = 0.14f), style = Stroke(1.5.dp.toPx()))
+                    }
+                }
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(heroCaption(report), style = MaterialTheme.typography.labelLarge, color = ReportMint)
+            Text("기능 사용 시간 합계", style = MaterialTheme.typography.titleLarge, color = Color.White)
+            Text(ReportFormat.duration(report.totalSec), style = MaterialTheme.typography.displayLarge, color = Color.White)
+            Text("동시에 켠 기능도 각각 합산해요", style = MaterialTheme.typography.bodyMedium, color = ReportMint)
+            val change = ReportFormat.totalChange(report)
+            if (change.isNotEmpty()) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = ReportMint.copy(alpha = 0.32f))
+                Text(change, style = MaterialTheme.typography.titleMedium, color = Color.White)
+            }
+        }
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -67,7 +108,13 @@ internal fun SummaryHero(report: UsageReport, header: HeaderActions) {
                 ratio >= GOOD_RECORDING_RATE -> BadgeTone.ACCENT
                 else -> BadgeTone.WARM
             }
-            Badge(ReportFormat.recordingRate(report.recordingRate), rateTone)
+            val basis = when (report.recordingRate.basis) {
+                RecordingRate.Basis.DRIVING_TIME -> "주행 시간"
+                RecordingRate.Basis.DISTANCE -> "주행거리"
+                RecordingRate.Basis.NONE -> null
+            }
+            val rate = ReportFormat.recordingRate(report.recordingRate)
+            Badge(if (ratio != null && basis != null) "$rate · $basis 기준" else rate, rateTone)
             Badge("주행 ${report.drivingCount}회 · ${ReportFormat.duration(report.drivingSec)}")
             report.avgTargetCelsius?.let { Badge("평균 설정 온도 %.1f°C".format(it)) }
         }
@@ -85,9 +132,12 @@ internal fun SummaryHero(report: UsageReport, header: HeaderActions) {
     }
 }
 
-/** "11월 1일 ~ 3일 · 기능 사용 시간 합계 · 12월 1일 완성" */
+internal val ReportInk = Color(0xFF102E27)
+internal val ReportMint = Color(0xFFB2F1DA)
+
+/** Date range and, for an open monthly report, the closing date. */
 private fun heroCaption(report: UsageReport): String {
-    val parts = mutableListOf(ReportFormat.range(report.firstDay, report.lastDay), "기능 사용 시간 합계")
+    val parts = mutableListOf(ReportFormat.range(report.firstDay, report.lastDay))
     if (report.isCurrent && report.period.kind == PeriodKind.MONTH) {
         val next = report.period.next().start
         parts += "${next.monthValue}월 ${next.dayOfMonth}일 완성"
@@ -108,33 +158,52 @@ private fun changeColor(percent: Int?): Color = when {
 internal fun UsageChart(report: UsageReport) {
     val buckets = report.buckets
     if (buckets.isEmpty()) return
-    val max = buckets.maxOf { it.seconds }.coerceAtLeast(1)
+    val peakIndex = buckets.indices.maxBy { buckets[it].seconds }
+    val max = buckets[peakIndex].seconds
+    val periodKey = report.period.serialize()
+    var selectedIndex by rememberSaveable(periodKey) { mutableIntStateOf(-1) }
+    val activeIndex = selectedIndex.takeIf { it in buckets.indices } ?: peakIndex
+    val activeBucket = buckets[activeIndex]
     val unit = when (report.period.kind) {
         PeriodKind.DAY -> "시간대"
         PeriodKind.WEEK -> "요일"
         PeriodKind.MONTH -> "날짜"
     }
     Section("${unit}별 사용") {
+        val colors = MaterialTheme.colorScheme
+        Text("최대 눈금 · ${ReportFormat.duration(max)}", style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
         Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(if (buckets.size > 12) 3.dp else 8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .semantics { contentDescription = "${unit}별 사용 막대그래프" },
-        ) {
-            buckets.forEach { bucket ->
-                val color = when {
-                    bucket.isNow -> MaterialTheme.colorScheme.secondary
-                    else -> MaterialTheme.colorScheme.primary
+            modifier = Modifier.fillMaxWidth().height(144.dp).drawBehind {
+                for (fraction in listOf(0f, 0.5f)) {
+                    val y = size.height * fraction
+                    drawLine(colors.outlineVariant, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
                 }
-                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
-                    if (bucket.seconds > 0) {
+            }.pointerInput(periodKey, buckets.size) {
+                detectTapGestures { position ->
+                    selectedIndex = (position.x / size.width * buckets.size).toInt().coerceIn(buckets.indices)
+                }
+            },
+        ) {
+            buckets.forEachIndexed { index, bucket ->
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                        .padding(horizontal = if (buckets.size > 12) 1.5.dp else 4.dp)
+                        .background(if (index == activeIndex) colors.primaryContainer else Color.Transparent)
+                        .semantics {
+                            contentDescription = "${bucketLabel(report.period.kind, bucket)}, ${bucketValue(bucket)}"
+                        },
+                    contentAlignment = Alignment.BottomCenter,
+                ) {
+                    if (bucket.isFuture) {
+                        Box(Modifier.fillMaxWidth().height(5.dp).background(colors.outlineVariant, RoundedCornerShape(4.dp)))
+                    } else if (bucket.seconds > 0) {
                         Box(
-                            Modifier
-                                .fillMaxWidth()
+                            Modifier.fillMaxWidth()
                                 .fillMaxHeight((bucket.seconds.toFloat() / max).coerceAtLeast(0.03f))
-                                .background(color, RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)),
+                                .background(
+                                    if (bucket.isNow) colors.secondary else colors.primary,
+                                    RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp),
+                                ),
                         )
                     }
                 }
@@ -156,7 +225,26 @@ internal fun UsageChart(report: UsageReport) {
                 }
             }
         }
-        peak(report)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        if (buckets.any { it.isFuture }) {
+            Text("옅은 점선 · 집계 예정", style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            NavIconButton(R.drawable.ic_chevron_left, "이전 $unit", { selectedIndex = activeIndex - 1 }, enabled = activeIndex > 0)
+            Column(Modifier.weight(1f)) {
+                val label = bucketLabel(report.period.kind, activeBucket)
+                Text(
+                    if (activeIndex == peakIndex && max > 0) "$label · 최다 사용" else label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.onSurfaceVariant,
+                )
+                Text(bucketValue(activeBucket), style = MaterialTheme.typography.titleMedium)
+            }
+            NavIconButton(R.drawable.ic_chevron_right, "다음 $unit", { selectedIndex = activeIndex + 1 }, enabled = activeIndex < buckets.lastIndex)
+        }
     }
 }
 
@@ -167,18 +255,14 @@ private fun axisLabel(kind: PeriodKind, index: Int, bucket: UsageBucket): String
     PeriodKind.MONTH -> if (index % 7 == 0) "${bucket.label}일" else null
 }
 
-/**
- * "가장 많이 쓴 날: 10일 · 2시간 10분". An hour names no total: features used together add
- * up past sixty minutes, which reads like an error.
- */
-private fun peak(report: UsageReport): String? {
-    val top = report.buckets.maxByOrNull { it.seconds }?.takeIf { it.seconds > 0 } ?: return null
-    return when (report.period.kind) {
-        PeriodKind.DAY -> "가장 많이 쓴 시간대: ${top.label}시"
-        PeriodKind.WEEK -> "가장 많이 쓴 요일: ${top.label}요일 · ${ReportFormat.duration(top.seconds)}"
-        PeriodKind.MONTH -> "가장 많이 쓴 날: ${top.label}일 · ${ReportFormat.duration(top.seconds)}"
-    }
+private fun bucketLabel(kind: PeriodKind, bucket: UsageBucket): String = when (kind) {
+    PeriodKind.DAY -> "${bucket.label}시"
+    PeriodKind.WEEK -> "${bucket.label}요일"
+    PeriodKind.MONTH -> "${bucket.label}일"
 }
+
+private fun bucketValue(bucket: UsageBucket): String =
+    if (bucket.isFuture) "집계 예정" else ReportFormat.duration(bucket.seconds)
 
 private val LabelWidth = 240.dp
 private val ValueWidth = 170.dp

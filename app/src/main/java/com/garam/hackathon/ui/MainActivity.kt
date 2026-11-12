@@ -108,8 +108,8 @@ class MainActivity : ComponentActivity() {
                         // Back to the first-run consent screen, as after a fresh install.
                         onWithdrawn = {
                             consentPostponed = false
+                            reportViewModel.reloadAfterErase()
                             screen = Screen.REPORT
-                            reportViewModel.refresh()
                         },
                     )
                     screen == Screen.DEBUG && BuildConfig.DEBUG -> DebugRoute(onBack = { screen = Screen.REPORT })
@@ -192,7 +192,7 @@ class MainActivity : ComponentActivity() {
             onBack = onBack,
             onRecordingChange = settingsViewModel::setRecordingEnabled,
             onCategoryChange = settingsViewModel::setCategoryEnabled,
-            onErase = settingsViewModel::eraseAllData,
+            onErase = { settingsViewModel.eraseAllData(reportViewModel::reloadAfterErase) },
             onWithdraw = { settingsViewModel.withdrawConsent(onWithdrawn) },
             onMessageShown = settingsViewModel::messageShown,
             onShowGuide = onShowGuide,

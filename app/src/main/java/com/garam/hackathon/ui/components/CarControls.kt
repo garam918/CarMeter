@@ -113,11 +113,11 @@ fun <T> SegmentedTabs(options: List<Pair<T, String>>, selected: T, onSelect: (T)
                 modifier = Modifier
                     .heightIn(min = TouchTarget)
                     .widthIn(min = 112.dp)
-                    .background(if (isSelected) colors.onSurface else colors.surface)
+                    .background(if (isSelected) colors.primary else colors.surface)
                     .selectable(selected = isSelected, role = Role.Tab, onClick = { onSelect(value) })
                     .padding(horizontal = 24.dp),
             ) {
-                Text(label, style = MaterialTheme.typography.labelLarge, color = if (isSelected) colors.surface else colors.onSurface)
+                Text(label, style = MaterialTheme.typography.labelLarge, color = if (isSelected) colors.onPrimary else colors.onSurface)
             }
         }
     }
@@ -148,10 +148,13 @@ fun Badge(text: String, tone: BadgeTone = BadgeTone.NEUTRAL) {
 /** A titled block of content on a quiet background. */
 @Composable
 fun Section(title: String?, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.large
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
+            .background(colors.surface, shape)
+            .border(1.dp, colors.outlineVariant, shape)
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {

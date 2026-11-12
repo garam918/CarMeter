@@ -59,6 +59,11 @@ class ReportViewModel(private val loader: ReportLoader, private val savedState: 
         }
     }
 
+    fun reloadAfterErase() {
+        _state.update { it.copy(report = null, monthReport = null, loading = true, failed = false) }
+        refresh()
+    }
+
     fun showPrevious() = select(_state.value.period.previous())
 
     fun showNext() {

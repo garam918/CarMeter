@@ -44,15 +44,16 @@ private val ContentWidth = 1120.dp
  */
 @Composable
 fun OnboardingScreen(onAgree: (() -> Unit)?, onDismiss: () -> Unit) {
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
             Column(
                 modifier = Modifier.widthIn(max = ContentWidth).fillMaxWidth().padding(32.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-                Text("CarMeter · 내 차 사용 고지서", style = MaterialTheme.typography.headlineMedium)
+                Text("CarMeter  /  내 차 사용 고지서", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                Text("내 차의 사용 습관을 한눈에", style = MaterialTheme.typography.headlineLarge)
                 Text(
-                    "아파트 관리비 고지서처럼, 이 차의 기능을 얼마나 쓰는지 날마다·주마다·달마다 정리해 드려요.",
+                    "어떤 기능을 얼마나 쓰는지 일간·주간·월간 고지서로 정리해 드려요.",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

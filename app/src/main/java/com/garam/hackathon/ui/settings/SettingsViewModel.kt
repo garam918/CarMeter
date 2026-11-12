@@ -48,12 +48,13 @@ class SettingsViewModel(
         viewModelScope.launch { settingsRepository.setCategoryEnabled(category, enabled) }
     }
 
-    fun eraseAllData() {
+    fun eraseAllData(onErased: () -> Unit) {
         if (erasing.value) return
         viewModelScope.launch {
             erasing.value = true
             try {
                 CollectorController.eraseAllData(getApplication())
+                onErased()
                 message.value = "모든 기록을 지웠어요."
             } finally {
                 erasing.value = false
