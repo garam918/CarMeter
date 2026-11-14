@@ -9,10 +9,9 @@
 | 항목 | 내용 |
 | --- | --- |
 | 앱 이름 | CarMeter (내 차 사용 고지서) |
-| 팀명 | 임가람 (개인 참가) |
 | 패키지 | `com.garam.hackathon` |
 | 버전 | 1.0.0 (versionCode 5) |
-| 릴리스 APK | [`apk/임가람_CarMeter_release.apk`](apk/) (`prodRelease`, 배포용 인증서로 서명, R8 축소) |
+| 릴리스 APK | [`apk/임가람_CarMeter_release.apk`](apk/) (`prodRelease`, 자체 발급 릴리스 키로 서명, R8 축소) |
 | 타깃 | Pleos Connect (Android Automotive OS), minSdk 28 · targetSdk 34 |
 
 ## 주요 기능
@@ -132,7 +131,7 @@ Android Studio에서는 이 폴더를 Open으로 열고 Gradle Sync를 실행합
 
 `settings.gradle.kts`에 Pleos Maven 저장소를 등록했습니다. 시작 가이드의 Vehicle 2.3.1은 저장소에서 404를 반환해, 상세 SDK 설치 문서와 Maven 메타데이터에 공개된 2.3.2를 씁니다.
 
-스토어 등록용 512px 아이콘(`docs/store/icon-512.png`)은 `java -Djava.awt.headless=true scripts/IconRenderer.java`로 다시 만듭니다. 앱 안의 아이콘은 같은 도형의 벡터(`res/drawable/ic_launcher_foreground.xml`)입니다.
+스토어 등록용 512px 아이콘(`docs/store/icon-512.png`)은 `java -Djava.awt.headless=true scripts/IconRenderer.java`로 다시 만듭니다. 앱 안의 아이콘은 같은 도형의 벡터(`app/src/main/res/drawable/ic_launcher_foreground.xml`)입니다.
 
 ### Pleos 시스템 이미지 설치
 
