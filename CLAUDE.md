@@ -203,6 +203,7 @@ app_state(key, value)   -- lastAlive 등
 | M4 동의·설정 | 완료 | 2026-11-03. 첫 실행 동의(3가지 안내), 동의 전 수집 차단, 전체·카테고리별 on/off(실시간 반영), 모든 기록 삭제, 상태 표시와 FGS 알림. JVM 테스트 92개 통과. 실측은 `docs/sdk-notes.md` 12절 |
 | M5 마무리 | 완료 | 2026-11-03. `demo` 플레이버와 합성 데이터 생성기(시드 고정, 두 달, 계절 반영), 시연 대본, 릴리스 R8 검증(SDK Gson keep 규칙 추가, capability 스냅샷 오저장 버그 수정), 성능 측정 스크립트와 결과, 완료 기준 7개 증빙. JVM 테스트 prod 95개·demo 103개 통과. 실측은 `docs/sdk-notes.md` 13절, `docs/performance.md`, 시연은 `docs/demo-script.md` |
 | M6 제출 전 보완 | 완료 | 2026-11-03. 패키지 `com.garam.hackathon`, 새 아이콘(고지서+사용량 막대)과 스토어용 512px, 라이트·다크 테마(시스템 주·야간)와 24sp 이상 글자, 일간·주간·월간 보기(기간 합계·분포 막대·지난 기간 비교), 동의 철회(기록 삭제), 13개월 보관 정리, 빈 기간 안내, 기록률 없음 사유. JVM 테스트 prod 110개·demo 118개 통과. 실측은 `docs/sdk-notes.md` 14절, 규칙은 `docs/implementation-plan.md` 7절 |
+| 제출 준비 | 진행 중 | 2026-11-13. 릴리스 서명(키는 저장소 밖 `~/.carmeter-signing`, v2), 버전 1.0.0(5), 제출 APK 복사 태스크 `:app:submissionApk`, README를 심사용(앱 이름·실행 방법·테스트 환경·APK 위치)으로 개편. 서명한 `prodRelease`를 에뮬레이터에 설치해 수집·주행 중 요약 확인. 2026-11-14 제출 APK `apk/임가람_CarMeter_release.apk`(개인 참가라 팀명은 성명) 생성, 커밋 작성자를 `CarMeter`로 정리, GitHub 비공개 저장소에 푸시. **11/16까지 공개 전환 필요.** 실측은 `docs/sdk-notes.md` 16절 |
 
 **확인 필요 (외부 문의)**
 - 부팅 시 자동 시작(BOOT_COMPLETED) 허용 여부 (헤드리스 구조라 u0·u10 모두 수신함)
@@ -212,7 +213,7 @@ app_state(key, value)   -- lastAlive 등
 - 실차 Android 버전과 요구 targetSdk
 - Vehicle SDK 2.3.2 consumer ProGuard 규칙에 Gson `TypeToken` keep 누락 (R8 릴리스에서 SDK가 동작하지 않음, 앱 쪽에서 우회)
 - CPU 기준(주행 5%·정차 25%)이 코어 하나 기준인지 전체 기준인지
-- 배포용 서명 인증서 발급 절차
+- 배포용 서명 인증서 발급 절차 (지금은 자체 발급 키로 서명. Pleos가 인증서를 발급하면 `keystore.properties`만 바꾼다)
 - 업데이트 안내: 마켓에 자동 업데이트가 없어 앱이 새 버전을 알려야 하는데(앱 업데이트 가이드), 네트워크 없이 새 버전을 알 방법이나 버전 확인 SDK 일정
 
 ---

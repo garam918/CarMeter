@@ -665,3 +665,34 @@ Gear Selection, Brake Pedal, ETCS, Telltales(주차 브레이크·방향지시�
 - 오버레이 디스플레이에는 Pleos 시스템 UI가 없고, Bridge가 만드는 DISPLAY2의 WindowPolicy 동작은 확인하지 못했다. 앱 레이아웃은 dp 기준이라 크기별 배치 확인에는 같은 결과로 본다.
 - `wm size`로 화면 0의 해상도를 바꾸면 Pleos가 앱 창 위치를 다시 잡지 않아(창이 853~2535px에 고정) 프리셋 확인에 쓸 수 없다(2026-11-09 확인).
 - 이 에뮬레이터는 기본 GPU 설정으로 부팅 후 약 15초에 멈추고 종료돼(종료 코드 139) `-gpu swiftshader_indirect`로 띄웠다. 소프트웨어 렌더링이라 강제 종료 직후 고지서가 뜨는 데 7초를 넘긴 경우가 있었다. 성능 판정에는 쓰지 않는다(`docs/performance.md`는 호스트 GPU 기준).
+
+## 16. 릴리스 서명과 제출용 APK (2026-11-13)
+
+출처: D [앱 보안 가이드](https://document.pleos.ai/docs/pleos-only/app-registration-guide/app-security-guide) · E (에뮬레이터 실측)
+
+**문서 요구:** 배포용 앱은 테스트·디버그 인증서가 아닌 정식 배포용 서명 인증서를 쓰고, 최종 배포 앱에서는 디버깅·디버그 빌드 설정을 끈다. 키 알고리즘·길이·서명 스킴·유효 기간은 정하지 않았다. Pleos가 인증서를 따로 발급하는지는 확인 필요(CLAUDE.md "확인 필요").
+
+**구성**
+
+| 항목 | 내용 |
+|---|---|
+| 키 생성 | `scripts/create-release-key.sh`. 비밀번호는 실행한 사람이 터미널에 입력하고, 화면·저장소에 남지 않는다 |
+| 키 위치 | `~/.carmeter-signing/carmeter-release.jks`와 `keystore.properties` (저장소 밖, 폴더 700·파일 600). `-Pcarmeter.signing=<파일>`로 바꿀 수 있다 |
+| 키 | PKCS12, RSA 4096, 유효 10,000일, `CN=CarMeter`, 별칭 `carmeter` |
+| 서명 스킴 | v2만. minSdk 28에서 v1은 원래 빠지고, v3를 켜면 apksig가 v2를 빼고 v3만 넣는다. v2만 읽는 검증 도구도 받아들이도록 v2로 두고, 키를 교체할 때 v3 lineage를 붙인다 |
+| 키가 없을 때 | 릴리스 빌드는 서명 없이 나오고 `:app:submissionApk`는 실패한다. `-PdebugSignedRelease`(디버그 키, 성능 측정용)로 만든 APK도 복사하지 않는다 |
+| 제출 파일 | `:app:submissionApk -Psubmission.team=<팀명>` → `apk/<팀명>_<submission.app>_release.apk`. 팀명이 비어 있으면 실패. 개인 참가라 팀명은 성명(메일 제목 규칙 "팀명(개인은 성명)"): `apk/임가람_CarMeter_release.apk` |
+| 버전 | 1.0.0 (versionCode 5) |
+
+**검증 (E)**
+
+| 확인 | 결과 |
+|---|---|
+| `apksigner verify` | v2 서명 확인, 서명자 1명 `CN=CarMeter`, SHA-256 지문이 키 생성 때 출력과 같음 |
+| `aapt2 dump badging` | `versionName 1.0.0`, `versionCode 5`, `debuggable` 없음 |
+| 설치 | 디버그 키로 서명된 기존 앱 위에는 설치되지 않아(서명 불일치) 지우고 설치. 설치 후 `apkSigningVersion=2` |
+| 퍼미션 | `CAR_*` 8개 모두 보호 수준 `normal`, 설치 시 허용. 서명 키와 무관 |
+| 동작 | 동의 → 알림 허용 → FGS(`specialUse`) 시작. VC로 시트 열선 3단·A/C를 켜고 끈 기록, 주행 1회가 주간 보기에 나타남. 기어 D에서 주행 중 요약, P에서 복귀. 크래시 0건 |
+| 단위 테스트 | prod 110개, demo 118개 통과 |
+
+**참고:** 앱이 화면에 보이는 동안 바뀐 상태는 60초 주기 저장 뒤에 고지서에 나온다. 다른 앱을 띄웠다가 돌아오면 `onResume`에서 바로 저장해 즉시 보인다. Pleos에서는 HOME 키(`KEYCODE_HOME`)를 눌러도 앱 창이 내려가지 않아 `onResume`이 다시 불리지 않으므로, 시연할 때는 대본대로 다른 앱(지도·설정)을 띄운다.
