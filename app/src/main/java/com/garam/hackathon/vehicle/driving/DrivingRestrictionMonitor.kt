@@ -1,9 +1,6 @@
 package com.garam.hackathon.vehicle.driving
 
-import android.car.Car
-import android.car.drivingstate.CarUxRestrictionsManager
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,39 +10,31 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * Tells the UI whether the car requires distraction-optimized screens. Listens only while
  * its lifecycle is started. If the car service is unavailable it reports false, so the
- * app stays usable on non-car devices.
+ * app stays usable on non-car devices. While car service restarts, the last value stays.
  */
 class DrivingRestrictionMonitor(context: Context) : DefaultLifecycleObserver {
     private val appContext = context.applicationContext
-    private var car: Car? = null
-    private var manager: CarUxRestrictionsManager? = null
+    private var connection: UxRestrictionsConnection? = null
 
     private val _requiresDistractionOptimization = MutableStateFlow(false)
     val requiresDistractionOptimization: StateFlow<Boolean> = _requiresDistractionOptimization.asStateFlow()
 
     override fun onStart(owner: LifecycleOwner) {
-        try {
-            val connected = Car.createCar(appContext) ?: return
-            car = connected
-            val uxManager = connected.getCarManager(Car.CAR_UX_RESTRICTION_SERVICE) as? CarUxRestrictionsManager ?: return
-            manager = uxManager
-            _requiresDistractionOptimization.value = uxManager.currentCarUxRestrictions?.isRequiresDistractionOptimization == true
-            uxManager.registerListener { restrictions ->
-                _requiresDistractionOptimization.value = restrictions.isRequiresDistractionOptimization
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Car service unavailable: ${e.javaClass.simpleName}")
+        val uxConnection = UxRestrictionsConnection(appContext) { restrictions ->
+            _requiresDistractionOptimization.value = restrictions.isRequiresDistractionOptimization
         }
+        connection = uxConnection
+        // On the main thread a ready car service reports inside this call, so the first frame
+        // already knows whether the car is driving. A short wait keeps a slow start from an ANR.
+        uxConnection.connect(UI_WAIT_MS)
     }
 
     override fun onStop(owner: LifecycleOwner) {
-        manager?.unregisterListener()
-        manager = null
-        car?.disconnect()
-        car = null
+        connection?.disconnect()
+        connection = null
     }
 
     private companion object {
-        const val TAG = "DrivingRestriction"
+        const val UI_WAIT_MS = 2_000L
     }
 }

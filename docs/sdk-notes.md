@@ -682,7 +682,7 @@ Gear Selection, Brake Pedal, ETCS, Telltales(주차 브레이크·방향지시�
 | 서명 스킴 | v2만. minSdk 28에서 v1은 원래 빠지고, v3를 켜면 apksig가 v2를 빼고 v3만 넣는다. v2만 읽는 검증 도구도 받아들이도록 v2로 두고, 키를 교체할 때 v3 lineage를 붙인다 |
 | 키가 없을 때 | 릴리스 빌드는 서명 없이 나오고 `:app:submissionApk`는 실패한다. `-PdebugSignedRelease`(디버그 키, 성능 측정용)로 만든 APK도 복사하지 않는다 |
 | 제출 파일 | `:app:submissionApk -Psubmission.team=<팀명>` → `apk/<팀명>_<submission.app>_release.apk`. 팀명이 비어 있으면 실패. 개인 참가라 팀명은 성명(메일 제목 규칙 "팀명(개인은 성명)"): `apk/임가람_CarMeter_release.apk` |
-| 버전 | 1.0.0 (versionCode 5) |
+| 버전 | 1.0.0 (versionCode 5). 2026-11-15에 1.0.1 (versionCode 6)으로 올림(17절) |
 
 **검증 (E)**
 
@@ -696,3 +696,36 @@ Gear Selection, Brake Pedal, ETCS, Telltales(주차 브레이크·방향지시�
 | 단위 테스트 | prod 110개, demo 118개 통과 |
 
 **참고:** 앱이 화면에 보이는 동안 바뀐 상태는 60초 주기 저장 뒤에 고지서에 나온다. 다른 앱을 띄웠다가 돌아오면 `onResume`에서 바로 저장해 즉시 보인다. Pleos에서는 HOME 키(`KEYCODE_HOME`)를 눌러도 앱 창이 내려가지 않아 `onResume`이 다시 불리지 않으므로, 시연할 때는 대본대로 다른 앱(지도·설정)을 띄운다.
+
+## 17. 차량 서비스 재시작 대응 (2026-11-15)
+
+출처: D [`Car`](https://developer.android.com/reference/android/car/Car) · D [`Car.CarServiceLifecycleListener`](https://developer.android.com/reference/android/car/Car.CarServiceLifecycleListener) · E (에뮬레이터 실측)
+
+**증상 (E):** 제출 전 점검에서 에뮬레이터를 콜드 부팅하고 약 2분 뒤, 처음 띄운 CarMeter 화면이 사라졌다. 같은 때 시스템 유저의 `com.android.car`가 재시작됐고, systemui·주행 화면 앱도 같이 죽었다. 앱 로그에는 `Car service has crashed. Client(null) is not handling it. Client should use Car.createCar(..., CarServiceLifecycleListener, ...)`가 남은 뒤, 앱이 스스로 `SIG 9`로 종료됐다.
+
+**원인:** `DrivingRestrictionMonitor`(UI)와 `DrivingStateSource`(수집)가 `Car.createCar(context)`를 썼다. 이 방식은 차량 서비스가 죽으면 Car 라이브러리가 클라이언트 프로세스를 종료한다.
+
+**재현 (E, 수정 전 1.0.0):** 앱을 화면에 띄우고 `adb shell am crash <시스템 유저 com.android.car pid>`. 앱이 `vis TOP` 상태에서 종료됐고, `CollectorService`는 49초 뒤 재시작으로 예약됐다(그동안 기록 공백).
+
+**수정:** `UxRestrictionsConnection`이 `Car.createCar(context, null, waitMs, CarServiceLifecycleListener)`로 연결한다. 문서상 `ready = false`는 "car service has crashed or killed and will be restarted"이고, 다시 준비되면 같은 `Car`로 `ready = true`가 온다. `ready = false`면 매니저를 버리고, `ready = true`면 `CarUxRestrictionsManager`를 다시 얻어 리스너를 등록하고, 그사이 바뀌었을 수 있는 현재 제한 상태를 한 번 더 보낸다(같은 값이면 IntervalTracker가 무시). 콜백은 항상 메인 스레드로 오고 수집은 작업 스레드에서 연결하므로 상태를 잠금으로 보호한다.
+
+| 호출 위치 | 대기 | 이유 |
+|---|---|---|
+| UI (`onStart`, 메인 스레드) | 2초 | 준비된 서비스는 호출 안에서 `ready = true`를 받아 첫 화면부터 주행 여부를 안다. 오래 막아 ANR이 나지 않게 짧게 |
+| 수집 (`checkCapability`, 작업 스레드) | 5초 | 예전 `createCar(context)`가 기다리던 시간과 비슷하게. 작업 스레드에서는 콜백이 나중에 오므로 반환 직후 `isConnected`면 바로 붙인다. 준비되지 않으면 연결을 닫고 미지원으로 둔다 |
+
+차량 서비스가 재시작되는 동안 UI는 마지막 값(주행 중/정차)을 유지한다.
+
+**검증 (E, 수정 후 1.0.1, 같은 방법)**
+
+| 확인 | 결과 |
+|---|---|
+| 앱 프로세스 | 차량 서비스 재시작 전후 같은 pid. systemui·차량 설정·미디어·주행 화면 앱은 재시작됨 |
+| 화면 | 시스템이 복구된 뒤 기어 D에서 주행 중 요약, P에서 보던 일간 고지서로 복귀 |
+| 수집 | 재시작 뒤 한 주행이 다시 시작되지 않은 `CollectorService`에 기록됨(일간 "주행 2회") |
+| Vehicle SDK | 재시작 뒤 VC로 바꾼 시트 열선 변경 콜백 4건이 앱에 도착 |
+| 단위 테스트·lint | prod 110개, demo 118개 통과. lint 오류 0 (경고 10개는 라이브러리 새 버전·targetSdk 안내로 이전과 같음) |
+
+**한계:** `android.car`는 JVM 테스트에서 스텁이라 연결 코드는 단위 테스트로 확인하지 못하고 에뮬레이터로 확인했다. Pleos 차량 서비스(`ai.pleos.service.car`)는 이번 시험에서 재시작되지 않아, Vehicle SDK 쪽 재연결은 확인하지 못했다.
+
+**제출 APK:** 이번부터 커밋한 소스를 새로 클론해 처음부터 빌드한 `prodRelease`를 제출 파일로 쓴다. 11/14의 1.0.0 APK는 작업 폴더의 증분 컴파일 결과라, 깨끗한 빌드와 비교하면 Compose 안정성 플래그·trace 마커 위치만 다른 dex가 나왔다(화면 문구·로직 차이 없음).

@@ -10,7 +10,7 @@
 | --- | --- |
 | 앱 이름 | CarMeter (내 차 사용 고지서) |
 | 패키지 | `com.garam.hackathon` |
-| 버전 | 1.0.0 (versionCode 5) |
+| 버전 | 1.0.1 (versionCode 6) |
 | 릴리스 APK | [`apk/임가람_CarMeter_release.apk`](apk/) (`prodRelease`, 자체 발급 릴리스 키로 서명, R8 축소) |
 | 타깃 | Pleos Connect (Android Automotive OS), minSdk 28 · targetSdk 34 |
 
@@ -99,6 +99,7 @@ APK 위치: `app/build/outputs/apk/<prod|demo>/<debug|release>/`
 | 단위 테스트 | `prod` 110개, `demo` 118개 통과 (구간 집계, 하트비트 복구, 월 경계, 기록률 등) |
 | 성능 (`prodRelease`) | 주행 중 CPU 평균 0.03%, 정차 중 최악 5.73%, PSS 최대 57MB, 콜드 실행 178ms 이하 (`docs/performance.md`) |
 | 백그라운드 | 다른 앱 5개를 띄워도 같은 프로세스·서비스 유지, 강제 종료 후 재시작·복구 확인 |
+| 차량 서비스 재시작 | 실행 중 `com.android.car`를 강제로 재시작해도 앱이 종료되지 않고, 복구 뒤 주행 판단과 기록이 이어짐 (`docs/sdk-notes.md` 17절) |
 | 주행 중 화면 | 기어 D에서 모든 화면이 값 3개 요약으로 바뀜, 스크롤·버튼 없음 |
 | 디스플레이 프리셋 | 12가지 크기에서 잘림·겹침 없음 |
 
