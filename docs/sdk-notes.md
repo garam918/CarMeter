@@ -728,4 +728,6 @@ Gear Selection, Brake Pedal, ETCS, Telltales(주차 브레이크·방향지시�
 
 **한계:** `android.car`는 JVM 테스트에서 스텁이라 연결 코드는 단위 테스트로 확인하지 못하고 에뮬레이터로 확인했다. Pleos 차량 서비스(`ai.pleos.service.car`)는 이번 시험에서 재시작되지 않아, Vehicle SDK 쪽 재연결은 확인하지 못했다.
 
-**제출 APK:** 이번부터 커밋한 소스를 새로 클론해 처음부터 빌드한 `prodRelease`를 제출 파일로 쓴다. 11/14의 1.0.0 APK는 작업 폴더의 증분 컴파일 결과라, 깨끗한 빌드와 비교하면 Compose 안정성 플래그·trace 마커 위치만 다른 dex가 나왔다(화면 문구·로직 차이 없음).
+**확인한 라이브러리 동작 (AOSP `android14-release` `Car.java`):** 리스너를 넘긴 `createCar`는 `ServiceManager`를 직접 조회하고, 서비스가 이미 있으면 기다리지 않고 바로 반환한다(메인 스레드면 반환 전에 `ready = true` 콜백). 서비스 연결이 끊기면 리스너가 있을 때는 `onLifecycleChanged(false)`만 부르고, 리스너가 없을 때만 `finishClient()`로 프로세스를 종료한다.
+
+**제출 APK:** 이번부터 커밋한 소스를 새로 클론해 처음부터 빌드한 `prodRelease`를 제출 파일로 쓴다. 1.0.1 APK는 커밋 `cc16849`를 클론해 `:app:submissionApk`로 만들었다(SHA-256 `c7280dfb3302d11aa6c3bc707d19c51fa7ff69dbc3385b93d2c099537a5ead21`, v2 서명, `versionCode 6`, debuggable 아님, 데모 클래스 없음). 깨끗한 에뮬레이터 상태(기존 앱 삭제)에서 README 순서대로 설치·실행해 동의 화면까지 확인했다. 11/14의 1.0.0 APK는 작업 폴더의 증분 컴파일 결과라, 깨끗한 빌드와 비교하면 Compose 안정성 플래그·trace 마커 위치만 다른 dex가 나왔다(화면 문구·로직 차이 없음).
